@@ -37,9 +37,9 @@ program actually runs — so it can find and read it.
 
 i made another `.cs` file and named it `Enums` as instructed sa docs given by sir *(pg 19)*
 
-![Enums.cs empty file](images/enums1.png)
+![Enums.cs empty file](enums1.png)
 
-![Enums.cs full code](images/enums2.png)
+![Enums.cs full code](enums2.png)
 
 > **quickie note:** during this, i learned that itll be the same procedure over and over for creating cs
 > file. i got confused lang a bit when i created a `.txt` file but i explained how i did it sa baba
@@ -76,9 +76,9 @@ ICard (interface)
 - Card must include a method to display itself using ASCII characters
 - Rarity must visually affect how the card is displayed *(see C.9, pg 8-11)*
 
-![Card Model Requirements](images/class2.png)
+![Card Model Requirements](class1.png)
 
-![Card.cs interface code](images/class1.png)
+![Card.cs interface code](class2.png)
 
 i've copied the skeleton code provided on the pages i've mentioned above. however, for the description
 naman ng cards; it'll be seen **pg 15** (E. student starter skeleton), i'm sure tama naman mga
@@ -94,7 +94,7 @@ please refer to **pg 8-11** *(C.9 Card Print System)*.
 
 ito na yung card display with diff borders w diff rarity level.
 
-![CardPrinter.cs code](images/card1.png)
+![CardPrinter.cs code](card1.png)
 
 > **note:** pls tell me if may mali ba sa code since medj madami ako times here nag error :)
 
@@ -115,13 +115,13 @@ static List<Card> LoadCards(string path)
 }
 ```
 
-![FileLoader skeleton](images/file1.png)
+![FileLoader skeleton](file1.png)
 
 it reads each line of `cards.txt`, splits it by commas, and creates the right card type.
 
 this func raw connects the `cards.txt` (which is the data/blueprint that defines each card) and `Card.cs`
 
-![FileLoader.cs code](images/file2.png)
+![FileLoader.cs code](file2.png)
 
 ---
 
