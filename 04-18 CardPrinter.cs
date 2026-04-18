@@ -78,8 +78,16 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
             }
             else if (pullCount >= 2)
             {
-                borderSuffix = new string('+', pullCount - 1);
-                contentSuffix = new string('|', pullCount - 1);
+                if (card.Rarity <= 2)
+                {
+                    borderSuffix = new string('+', pullCount - 1);
+                    contentSuffix = new string('|', pullCount - 1);
+                }
+                else
+                {
+                    borderSuffix = new string(border, pullCount - 1);
+                    contentSuffix = new string(border, pullCount - 1);
+                }
             }
 
             if (card.Rarity == 1)
