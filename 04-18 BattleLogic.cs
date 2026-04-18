@@ -6,64 +6,14 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
     public static class BattleLogic
     {
         public static bool ProgramBattleRestart = false;
+        private static Random rng;
 
-        static readonly Dictionary<CardType, (string name, StatusEffect effect)> Spells =
-            new Dictionary<CardType, (string name, StatusEffect effect)>
-            {
-                { CardType.FIRE, ("Burn", StatusEffect.Burned) },
-                { CardType.WATER, ("Scald", StatusEffect.Confused) },
-                { CardType.GRASS, ("Poison", StatusEffect.Poisoned) }
-            };
-
-        static bool HasAdvantage(CardType attacker, CardType defender)
+        private static Dictionary<CardType, (string name, StatusEffect effect)> Spells =
+            new Dictionary<CardType, (string name, StatusEffect effect)>()
         {
-            if (attacker == CardType.FIRE && defender == CardType.GRASS) return true;
-            if (attacker == CardType.GRASS && defender == CardType.WATER) return true;
-            if (attacker == CardType.WATER && defender == CardType.FIRE) return true;
-            return false;
-        }
-
-        static Action<BaseCard, BaseCard> NormalAttack = (attacker, defender) =>
-        {
-            int damage = attacker.Attack;
-            if (HasAdvantage(attacker.Type, defender.Type))
-                damage += 20;
-            defender.HP -= damage;
-            Console.WriteLine($"{attacker.Name} attacks for {damage} damage!");
-            Console.WriteLine($"{defender.Name} HP: {defender.HP}");
-        };
-
-        static Action<BaseCard, BaseCard, Random> SpecialTurn = (attacker, defender, rng) =>
-        {
-            Console.WriteLine($"\n{attacker.Name}'s Special Turn!");
-            bool heads = rng.Next(2) == 0;
-
-            if (heads)
-            {
-                Console.WriteLine("Coin Flip: HEADS!");
-                int damage = attacker.Attack;
-                if (HasAdvantage(attacker.Type, defender.Type))
-                    damage += 20;
-                damage += 20;
-                defender.HP -= damage;
-                Console.WriteLine($"{attacker.Name} attacks for {damage} damage!");
-                Console.WriteLine($"{defender.Name} HP: {defender.HP}");
-                var spell = Spells[attacker.Type];
-                Console.WriteLine($"{attacker.Name} used {spell.name}!");
-                Console.WriteLine($"{defender.Name} is {spell.effect}! (-20 HP)");
-                defender.HP -= 20;
-                Console.WriteLine($"{defender.Name} HP: {defender.HP}");
-            }
-            else
-            {
-                Console.WriteLine("Coin Flip: TAILS!");
-                int damage = attacker.Attack;
-                if (HasAdvantage(attacker.Type, defender.Type))
-                    damage += 20;
-                defender.HP -= damage;
-                Console.WriteLine($"{attacker.Name} attacks for {damage} damage!");
-                Console.WriteLine($"{defender.Name} HP: {defender.HP}");
-            }
+            { CardType.FIRE, ("Burn", StatusEffect.Burned) },
+            { CardType.WATER, ("Scald", StatusEffect.Confused) },
+            { CardType.GRASS, ("Poison", StatusEffect.Poisoned) }
         };
 
         public static void RunBattle(
@@ -72,93 +22,117 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
             List<BaseCard> allCards,
             List<BaseCard> originalCards,
             Dictionary<int, int> binderPullCount,
-            Random rng)
+            Random sharedRng)
         {
+            rng = sharedRng;
+
             Console.WriteLine("\n========== BATTLE START ==========");
 
             Console.WriteLine("\n[Turn 1] Your Normal Attack!");
             NormalAttack(user, ai);
-            if (ai.HP <= 0)
-            {
-                Console.WriteLine($"\n{ai.Name} fainted! YOU WIN! :)");
-                ReplayOptions(user, allCards, originalCards, binderPullCount, rng);
-                return;
-            }
+            if (CheckEnd(user, ai, allCards, originalCards, binderPullCount)) return;
 
             Console.WriteLine("\n[Turn 2] AI's Normal Attack!");
             NormalAttack(ai, user);
-            if (user.HP <= 0)
-            {
-                Console.WriteLine($"\n{user.Name} fainted! YOU LOSE! :(");
-                ReplayOptions(user, allCards, originalCards, binderPullCount, rng);
-                return;
-            }
+            if (CheckEnd(user, ai, allCards, originalCards, binderPullCount)) return;
 
             Console.WriteLine("\n[Turn 3] Your Special Turn!");
-            SpecialTurn(user, ai, rng);
-            if (ai.HP <= 0)
-            {
-                Console.WriteLine($"\n{ai.Name} fainted! YOU WIN! :)");
-                ReplayOptions(user, allCards, originalCards, binderPullCount, rng);
-                return;
-            }
+            SpecialTurn(user, ai);
+            if (CheckEnd(user, ai, allCards, originalCards, binderPullCount)) return;
 
             Console.WriteLine("\n[Turn 4] AI's Special Turn!");
-            SpecialTurn(ai, user, rng);
-            if (user.HP <= 0)
-            {
-                Console.WriteLine($"\n{user.Name} fainted! YOU LOSE! :(");
-                ReplayOptions(user, allCards, originalCards, binderPullCount, rng);
-                return;
-            }
+            SpecialTurn(ai, user);
+            if (CheckEnd(user, ai, allCards, originalCards, binderPullCount)) return;
 
             Console.WriteLine("\n========== IT'S A TIE! ==========");
-            ReplayOptions(user, allCards, originalCards, binderPullCount, rng);
+            Replay(user, allCards, originalCards, binderPullCount);
         }
 
-        static void ReplayOptions(
+        private static void NormalAttack(BaseCard attacker, BaseCard defender)
+        {
+            int damage = attacker.Attack;
+
+            if (HasAdvantage(attacker.Type, defender.Type))
+                damage += 20;
+
+            defender.HP -= damage;
+
+            Console.WriteLine($"{attacker.Name} deals {damage} damage!");
+            Console.WriteLine($"{defender.Name} HP: {defender.HP}");
+        }
+
+        private static void SpecialTurn(BaseCard attacker, BaseCard defender)
+        {
+            Console.WriteLine($"\n{attacker.Name}'s Special Turn!");
+
+            if (rng.Next(2) == 0)
+            {
+                Console.WriteLine("HEADS!");
+                NormalAttack(attacker, defender);
+                defender.HP -= 20;
+
+                var spell = Spells[attacker.Type];
+                Console.WriteLine($"{attacker.Name} used {spell.name}!");
+            }
+            else
+            {
+                Console.WriteLine("TAILS!");
+                NormalAttack(attacker, defender);
+            }
+        }
+
+        private static bool HasAdvantage(CardType a, CardType b)
+        {
+            return (a == CardType.FIRE && b == CardType.GRASS) ||
+                   (a == CardType.GRASS && b == CardType.WATER) ||
+                   (a == CardType.WATER && b == CardType.FIRE);
+        }
+
+        private static bool CheckEnd(
+            BaseCard user,
+            BaseCard ai,
+            List<BaseCard> allCards,
+            List<BaseCard> originalCards,
+            Dictionary<int, int> binderPullCount)
+        {
+            if (ai.HP <= 0)
+            {
+                Console.WriteLine($"\n{ai.Name} fainted! YOU WIN!");
+                Replay(user, allCards, originalCards, binderPullCount);
+                return true;
+            }
+
+            if (user.HP <= 0)
+            {
+                Console.WriteLine($"\n{user.Name} fainted! YOU LOSE!");
+                Replay(user, allCards, originalCards, binderPullCount);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void Replay(
             BaseCard lastCard,
             List<BaseCard> allCards,
             List<BaseCard> originalCards,
-            Dictionary<int, int> binderPullCount,
-            Random rng)
+            Dictionary<int, int> binderPullCount)
         {
-            Console.WriteLine("\n[1] Play again with the same card");
+            Console.WriteLine("\n[1] Play again using the same card selected");
             Console.WriteLine("[2] Choose another card");
-            Console.WriteLine("[3] Exit to main menu");
+            Console.WriteLine("[3] Exit");
             Console.Write("Choice: ");
 
-            string choice = Console.ReadLine();
+            string input = Console.ReadLine();
 
-            switch (choice)
+            if (input == "1")
             {
-                case "1":
-                    lastCard.HP = originalCards.Find(c =>
-                        c.Name.Equals(lastCard.Name,
-                        StringComparison.OrdinalIgnoreCase))?.HP ?? lastCard.HP;
-
-                    BaseCard newAI = allCards[rng.Next(allCards.Count)];
-                    newAI.HP = originalCards.Find(c =>
-                        c.Name.Equals(newAI.Name,
-                        StringComparison.OrdinalIgnoreCase))?.HP ?? newAI.HP;
-
-                    Console.WriteLine("\nAI selected:");
-                    newAI.PrintCard();
-
-                    RunBattle(lastCard, newAI, allCards, originalCards, binderPullCount, rng);
-                    break;
-
-                case "2":
-                    ProgramBattleRestart = true;
-                    break;
-
-                case "3":
-                    break;
-
-                default:
-                    Console.WriteLine("Invalid option.");
-                    ReplayOptions(lastCard, allCards, originalCards, binderPullCount, rng);
-                    break;
+                BaseCard ai = allCards[rng.Next(allCards.Count)];
+                RunBattle(lastCard, ai, allCards, originalCards, binderPullCount, rng);
+            }
+            else if (input == "2")
+            {
+                ProgramBattleRestart = true;
             }
         }
     }
