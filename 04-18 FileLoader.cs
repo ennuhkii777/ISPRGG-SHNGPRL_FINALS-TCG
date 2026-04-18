@@ -9,7 +9,6 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
         public static List<BaseCard> LoadCards(string path)
         {
             List<BaseCard> cards = new List<BaseCard>();
-
             if (!File.Exists(path))
             {
                 Console.WriteLine("cards.txt not found!");
@@ -17,25 +16,21 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
             }
 
             string[] lines = File.ReadAllLines(path);
-
             foreach (string line in lines)
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
-
                 string[] parts = line.Split(',');
-
                 if (parts.Length < 7) continue;
 
-                string name = parts[0].Trim();
-                string typeStr = parts[1].Trim();
-                int rarity = int.Parse(parts[2].Trim());
-                string attackCode = parts[3].Trim();
-                int hp = int.Parse(parts[4].Trim());
-                int attack = int.Parse(parts[5].Trim());
+                string name        = parts[0].Trim();
+                string typeStr     = parts[1].Trim();
+                int rarity         = int.Parse(parts[2].Trim());
+                int hp             = int.Parse(parts[3].Trim());
+                string attackCode  = parts[4].Trim();
+                int attack         = int.Parse(parts[5].Trim());
                 string specialMove = parts[6].Trim();
 
                 BaseCard card = null;
-
                 if (typeStr.ToUpper() == "FIRE")
                     card = new FireCard(name, hp, attackCode, attack, rarity, specialMove);
                 else if (typeStr.ToUpper() == "WATER")
@@ -46,7 +41,6 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
                 if (card != null)
                     cards.Add(card);
             }
-
             return cards;
         }
     }
