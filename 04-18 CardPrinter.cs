@@ -6,119 +6,111 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
     {
         public static void Print(BaseCard card)
         {
-            string attackName = BaseCard.AttackNames.ContainsKey(card.AttackCode)
-                ? BaseCard.AttackNames[card.AttackCode]
-                : card.AttackCode;
-
-            string line1 = $"{card.Name} HP:{card.HP}".Trim();
-            string line2 = $"TYPE: {card.Type}".Trim();
-            string line3 = $"{attackName}: {card.Attack}".Trim();
-            string line4 = $"{card.SpecialMove}".Trim();
-
-            int contentWidth = Math.Max(Math.Max(line1.Length, line2.Length),
-                               Math.Max(line3.Length, line4.Length));
-
-            char border = GetBorderChar(card.Rarity);
-
-            if (card.Rarity == 1)
-            {
-                string horizontal = new string('-', contentWidth + 2);
-                Console.WriteLine("+" + horizontal + "+");
-                Console.WriteLine("| " + line1.PadRight(contentWidth) + " |");
-                Console.WriteLine("| " + line2.PadRight(contentWidth) + " |");
-                Console.WriteLine("| " + line3.PadRight(contentWidth) + " |");
-                Console.WriteLine("| " + line4.PadRight(contentWidth) + " |");
-                Console.WriteLine("+" + horizontal + "+");
-            }
-            else if (card.Rarity == 2)
-            {
-                string horizontal = new string('=', contentWidth + 2);
-                Console.WriteLine("+" + horizontal + "+");
-                Console.WriteLine("| " + line1.PadRight(contentWidth) + " |");
-                Console.WriteLine("| " + line2.PadRight(contentWidth) + " |");
-                Console.WriteLine("| " + line3.PadRight(contentWidth) + " |");
-                Console.WriteLine("| " + line4.PadRight(contentWidth) + " |");
-                Console.WriteLine("+" + horizontal + "+");
-            }
-            else
-            {
-                string horizontal = new string(border, contentWidth + 4);
-                Console.WriteLine(horizontal);
-                Console.WriteLine(border + " " + line1.PadRight(contentWidth) + " " + border);
-                Console.WriteLine(border + " " + line2.PadRight(contentWidth) + " " + border);
-                Console.WriteLine(border + " " + line3.PadRight(contentWidth) + " " + border);
-                Console.WriteLine(border + " " + line4.PadRight(contentWidth) + " " + border);
-                Console.WriteLine(horizontal);
-            }
+            PrintInternal(card, 1);
         }
 
         public static void PrintWithCount(BaseCard card, int pullCount)
+        {
+            PrintInternal(card, pullCount);
+        }
+
+        private static void PrintInternal(BaseCard card, int pullCount)
         {
             string attackName = BaseCard.AttackNames.ContainsKey(card.AttackCode)
                 ? BaseCard.AttackNames[card.AttackCode]
                 : card.AttackCode;
 
-            string line1 = $"{card.Name} HP:{card.HP}".Trim();
-            string line2 = $"TYPE: {card.Type}".Trim();
-            string line3 = $"{attackName}: {card.Attack}".Trim();
-            string line4 = $"{card.SpecialMove}".Trim();
+            string line1 = $"{card.Name} HP:{card.HP}";
+            string line2 = $"TYPE: {card.Type}";
+            string line3 = $"{attackName}: {card.Attack}";
+            string line4 = $"{card.SpecialMove}";
 
-            int contentWidth = Math.Max(Math.Max(line1.Length, line2.Length),
-                               Math.Max(line3.Length, line4.Length));
+            int maxLen = Math.Max(
+                Math.Max(line1.Length, line2.Length),
+                Math.Max(line3.Length, line4.Length)
+            );
+
+            int width = maxLen + 4;
 
             char border = GetBorderChar(card.Rarity);
 
-            string borderSuffix = "";
-            string contentSuffix = "";
-            string topSuffix = "";
+            string stack = "";
+            string label = "";
 
-            if (pullCount >= 6)
+            if (pullCount <= 4)
             {
-                topSuffix = " x" + pullCount;
+                stack = new string(GetStackChar(card.Rarity), pullCount);
             }
-            else if (pullCount >= 2)
+            else if (pullCount >= 6)
             {
-                if (card.Rarity <= 2)
-                {
-                    borderSuffix = new string('+', pullCount - 1);
-                    contentSuffix = new string('|', pullCount - 1);
-                }
+                label = $" {pullCount}x";
+            }
+
+            PrintTop(card.Rarity, border, width, stack, label);
+
+            PrintRow(card.Rarity, line1, width, border, stack);
+            PrintRow(card.Rarity, line2, width, border, stack);
+            PrintRow(card.Rarity, line3, width, border, stack);
+            PrintRow(card.Rarity, line4, width, border, stack);
+
+            PrintBottom(card.Rarity, border, width, stack);
+        }
+
+        private static void PrintTop(int rarity, char border, int width, string stack, string label)
+        {
+            int extra = stack.Length;
+
+            if (rarity == 1 || rarity == 2)
+            {
+                string horizontal = new string(border, width);
+                string plusStack = new string('+', extra);
+
+                if (!string.IsNullOrEmpty(label))
+                    Console.WriteLine("+" + horizontal + "+" + label);
                 else
-                {
-                    borderSuffix = new string(border, pullCount - 1);
-                    contentSuffix = new string(border, pullCount - 1);
-                }
-            }
-
-            if (card.Rarity == 1)
-            {
-                string horizontal = new string('-', contentWidth + 2);
-                Console.WriteLine("+" + horizontal + "+" + borderSuffix + topSuffix);
-                Console.WriteLine("| " + line1.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("| " + line2.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("| " + line3.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("| " + line4.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("+" + horizontal + "+" + borderSuffix);
-            }
-            else if (card.Rarity == 2)
-            {
-                string horizontal = new string('=', contentWidth + 2);
-                Console.WriteLine("+" + horizontal + "+" + borderSuffix + topSuffix);
-                Console.WriteLine("| " + line1.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("| " + line2.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("| " + line3.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("| " + line4.PadRight(contentWidth) + " |" + contentSuffix);
-                Console.WriteLine("+" + horizontal + "+" + borderSuffix);
+                    Console.WriteLine("+" + horizontal + "+" + plusStack);
             }
             else
             {
-                string horizontal = new string(border, contentWidth + 4);
-                Console.WriteLine(horizontal + topSuffix);
-                Console.WriteLine(border + " " + line1.PadRight(contentWidth) + " " + border + contentSuffix);
-                Console.WriteLine(border + " " + line2.PadRight(contentWidth) + " " + border + contentSuffix);
-                Console.WriteLine(border + " " + line3.PadRight(contentWidth) + " " + border + contentSuffix);
-                Console.WriteLine(border + " " + line4.PadRight(contentWidth) + " " + border + contentSuffix);
-                Console.WriteLine(horizontal);
+                int totalWidth = width + 2 + extra;
+
+                string line = new string(border, totalWidth);
+
+                if (!string.IsNullOrEmpty(label))
+                    Console.WriteLine(line + label);
+                else
+                    Console.WriteLine(line);
+            }
+        }
+
+        private static void PrintRow(int rarity, string text, int width, char border, string stack)
+        {
+            string padded = text.PadRight(width - 2);
+
+            if (rarity == 1 || rarity == 2)
+                Console.WriteLine("| " + padded + " |" + stack);
+            else
+                Console.WriteLine(border + " " + padded + " " + border + stack);
+        }
+
+        private static void PrintBottom(int rarity, char border, int width, string stack)
+        {
+            int extra = stack.Length;
+
+            if (rarity == 1 || rarity == 2)
+            {
+                string horizontal = new string(border, width);
+                string plusStack = new string('+', extra);
+
+                Console.WriteLine("+" + horizontal + "+" + plusStack);
+            }
+            else
+            {
+                // FIX: match FULL row width
+                int totalWidth = width + 2 + extra;
+
+                string line = new string(border, totalWidth);
+                Console.WriteLine(line);
             }
         }
 
@@ -134,5 +126,14 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
                 default: return '-';
             }
         }
+
+        private static char GetStackChar(int rarity)
+        {
+            if (rarity == 1 || rarity == 2)
+                return '|';
+
+            return GetBorderChar(rarity);
+        }
     }
 }
+
