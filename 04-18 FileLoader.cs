@@ -22,12 +22,12 @@ namespace ISPRGG_SHNGPRL_FINALS_TCG
                 string[] parts = line.Split(',');
                 if (parts.Length < 7) continue;
 
-                string name        = parts[0].Trim();
-                string typeStr     = parts[1].Trim();
-                int rarity         = int.Parse(parts[2].Trim());
-                int hp             = int.Parse(parts[3].Trim());
-                string attackCode  = parts[4].Trim();
-                int attack         = int.Parse(parts[5].Trim());
+                string name = parts[0].Trim();
+                string typeStr = parts[1].Trim();
+                int rarity = int.Parse(parts[2].Trim());
+                string attackCode = parts[3].Trim();
+                int hp = int.Parse(parts[4].Trim());
+                int attack = int.Parse(parts[5].Trim());
                 string specialMove = parts[6].Trim();
 
                 BaseCard card = null;
